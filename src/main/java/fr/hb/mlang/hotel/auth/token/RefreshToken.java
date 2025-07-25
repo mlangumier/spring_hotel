@@ -7,18 +7,21 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
-@Getter
-@Setter
+@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "refresh_token")
 public class RefreshToken {
 
   @Id
@@ -28,7 +31,7 @@ public class RefreshToken {
   @Column(name = "token", unique = true, nullable = false)
   private String token;
 
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 

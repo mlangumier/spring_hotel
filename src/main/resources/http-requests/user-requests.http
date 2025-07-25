@@ -1,0 +1,4 @@
+### GET users
+GET {{base_url}}/users
+
+###

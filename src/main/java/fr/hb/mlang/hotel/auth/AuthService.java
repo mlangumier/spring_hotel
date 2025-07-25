@@ -1,19 +1,19 @@
 package fr.hb.mlang.hotel.auth;
 
-import fr.hb.mlang.hotel.auth.dto.AuthResponseDTO;
-import fr.hb.mlang.hotel.auth.dto.LoginRequestDTO;
-import fr.hb.mlang.hotel.auth.dto.LoginResponseDTO;
-import fr.hb.mlang.hotel.auth.dto.RegisterRequestDTO;
+import fr.hb.mlang.hotel.auth.dto.AuthenticationResponse;
+import fr.hb.mlang.hotel.auth.dto.LoginRequest;
+import fr.hb.mlang.hotel.auth.dto.LoginResponse;
+import fr.hb.mlang.hotel.auth.dto.RegisterRequest;
 import fr.hb.mlang.hotel.auth.dto.TokenPairDTO;
 import fr.hb.mlang.hotel.user.domain.User;
 
 public interface AuthService {
 
-  AuthResponseDTO register(RegisterRequestDTO request);
+  AuthenticationResponse register(RegisterRequest request);
 
-  AuthResponseDTO verifyAccount(String token);
+  AuthenticationResponse verifyAccount(String verificationToken);
 
-  LoginResponseDTO login(LoginRequestDTO credentials);
+  LoginResponse login(LoginRequest credentials);
 
   TokenPairDTO refreshToken(String refreshToken);
 

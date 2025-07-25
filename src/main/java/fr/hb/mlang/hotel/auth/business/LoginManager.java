@@ -1,6 +1,6 @@
 package fr.hb.mlang.hotel.auth.business;
 
-import fr.hb.mlang.hotel.auth.dto.LoginRequestDTO;
+import fr.hb.mlang.hotel.auth.dto.LoginRequest;
 import fr.hb.mlang.hotel.user.domain.User;
 import fr.hb.mlang.hotel.user.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LoginManager {
 
-  private final AuthenticationManager authenticationManager;
+  private final AuthenticationManager authManager;
 
   /**
    * Authenticates the {@link User} and returns their full {@link CustomUserDetails} data.
@@ -21,8 +21,8 @@ public class LoginManager {
    * @param credentials Credentials used to authenticate the user
    * @return the information of the authenticated user
    */
-  public CustomUserDetails authenticateUser(LoginRequestDTO credentials) {
-    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+  public CustomUserDetails authenticateUser(LoginRequest credentials) {
+    Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(
         credentials.getEmail(),
         credentials.getPassword()
     ));

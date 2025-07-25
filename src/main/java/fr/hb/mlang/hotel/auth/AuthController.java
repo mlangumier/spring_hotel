@@ -1,9 +1,9 @@
 package fr.hb.mlang.hotel.auth;
 
-import fr.hb.mlang.hotel.auth.dto.AuthResponseDTO;
-import fr.hb.mlang.hotel.auth.dto.LoginRequestDTO;
-import fr.hb.mlang.hotel.auth.dto.LoginResponseDTO;
-import fr.hb.mlang.hotel.auth.dto.RegisterRequestDTO;
+import fr.hb.mlang.hotel.auth.dto.AuthenticationResponse;
+import fr.hb.mlang.hotel.auth.dto.LoginRequest;
+import fr.hb.mlang.hotel.auth.dto.LoginResponse;
+import fr.hb.mlang.hotel.auth.dto.RegisterRequest;
 import fr.hb.mlang.hotel.auth.dto.TokenPairDTO;
 import fr.hb.mlang.hotel.auth.token.RefreshToken;
 import fr.hb.mlang.hotel.security.jwt.JwtProvider;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -33,20 +33,20 @@ public class AuthController {
   private final JwtProvider jwtProvider;
 
   @PostMapping("/register")
-  public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
-    AuthResponseDTO response = authService.register(request);
+  public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
+    AuthenticationResponse response = authService.register(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @GetMapping("/verify")
-  public ResponseEntity<AuthResponseDTO> verify(@RequestParam("token") String token) {
-    AuthResponseDTO response = authService.verifyAccount(token);
+  public ResponseEntity<AuthenticationResponse> verify(@RequestParam("token") String token) {
+    AuthenticationResponse response = authService.verifyAccount(token);
     return ResponseEntity.ok(response);
   }
 
   @PostMapping("/login")
-  public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO credentials) {
-    LoginResponseDTO response = authService.login(credentials);
+  public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest credentials) {
+    LoginResponse response = authService.login(credentials);
 
     //TODO: "SOLID"
     RefreshToken refreshToken = jwtProvider.createRefreshToken((CustomUserDetails) response.userDetails());
@@ -54,24 +54,28 @@ public class AuthController {
     Cookie cookie = new Cookie("refresh_token", refreshToken.getToken());
     cookie.setHttpOnly(true);
     cookie.setSecure(false); // Set to {true} for HTTPS setup
-    cookie.setPath("/api/v1/refresh-token");
+    cookie.setPath("/api/v1/auth/refresh-token");
 
     return ResponseEntity
         .status(HttpStatus.ACCEPTED)
         .header(HttpHeaders.SET_COOKIE, cookie.toString())
-        .body(response);
+        .body(response); //WARNING: transform `LoginResponse.userDetails` into `LoginResponse.userDTO`: remove sensitive data (ex: password)
   }
 
   @PostMapping("/refresh-token")
   public ResponseEntity<String> refreshToken(@CookieValue(name = "refresh_token") String refreshToken) {
+    if (refreshToken == null) {
+      throw new RuntimeException("No refresh token provided");
+    }
+
     try {
       TokenPairDTO tokens = authService.refreshToken(refreshToken);
 
       //TODO: "SOLID"
       Cookie cookie = new Cookie("refresh_token", tokens.refreshToken());
       cookie.setHttpOnly(true);
-      cookie.setSecure(false); // Set to {true} for HTTPS setup
-      cookie.setPath("/api/v1/refresh-token");
+      cookie.setSecure(false); // Set to {true} is using an HTTPS setup
+      cookie.setPath("/api/v1/auth/refresh-accessToken");
 
       return ResponseEntity
           .status(HttpStatus.ACCEPTED)
@@ -80,19 +84,5 @@ public class AuthController {
     } catch (Exception e) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
     }
-  }
-
-  //  @PostMapping("/logout")
-  //  public ResponseEntity<AuthResponseDTO> logout(@RequestParam("token") String token) {
-  //    AuthResponseDTO response = authService.logout(token);
-  //    return ResponseEntity.status(HttpStatus.OK).body(response);
-  //  }
-
-  @GetMapping("/protected")
-  public ResponseEntity<AuthResponseDTO> checkProtected(@AuthenticationPrincipal CustomUserDetails userDetails) {
-    return ResponseEntity
-        .status(HttpStatus.ACCEPTED)
-        .body(new AuthResponseDTO(
-            "Access granted for logged in user: " + userDetails.getUsername()));
   }
 }

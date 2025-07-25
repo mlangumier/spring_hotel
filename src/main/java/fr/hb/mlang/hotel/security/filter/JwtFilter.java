@@ -23,33 +23,41 @@ public class JwtFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request,
+      @NonNull HttpServletRequest request,
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain
   ) throws ServletException, IOException {
-    String authorizationHeader = request.getHeader("Authorization");
+    //if (request.getServletPath().contains("/api/v1/auth")) {
+    //  filterChain.doFilter(request, response);
+    //  return;
+    //}
 
-    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    final String authHeader = request.getHeader("Authorization");
+    final String accessToken;
+    final String userEmail;
+
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    String token = authorizationHeader.substring("Bearer ".length());
+    accessToken = authHeader.substring("Bearer ".length());
+    userEmail = jwtProvider.extractEmailFromToken(accessToken);
 
-    try {
-      UserDetails userDetails = jwtProvider.verifyAccessToken(token);
+    if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+      UserDetails userDetails = jwtProvider.verifyAccessToken(accessToken);
 
-      Authentication authentication = new UsernamePasswordAuthenticationToken(
+      //TODO: check token expiredAt
+
+      Authentication authToken = new UsernamePasswordAuthenticationToken(
           userDetails,
           null,
           userDetails.getAuthorities()
       );
 
-      SecurityContextHolder.getContext().setAuthentication(authentication);
-
-      filterChain.doFilter(request, response);
-    } catch (Exception e) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
+      SecurityContextHolder.getContext().setAuthentication(authToken);
     }
+
+    filterChain.doFilter(request, response);
   }
 }

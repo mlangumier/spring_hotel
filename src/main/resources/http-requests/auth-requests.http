@@ -1,5 +1,5 @@
 ### Register a new User & send validation email (with body)
-POST {{base_url}}/register
+POST {{base_url}}/auth/register
 Content-Type: application/json
 
 {
@@ -8,10 +8,10 @@ Content-Type: application/json
 }
 
 ### Validate a user using the activation link in the email received after registration
-GET {{base_url}}/verify?token={{user.verify_token}}
+GET {{base_url}}/auth/verify?token={{user.verify_token}}
 
 ### Login + creates an IntelliJ variable "auth_token" for next requests
-POST {{base_url}}/login
+POST {{base_url}}/auth/login
 Content-Type: application/json
 
 {
@@ -19,13 +19,10 @@ Content-Type: application/json
   "password": "{{user.password}}"
 }
 
-> {% client.global.set("access_token", response.body.token); %}
+> {% client.global.set("access_token", response.body.accessToken); %}
 
 ### Logout
-GET {{base_url}}/logout
+GET {{base_url}}/auth/logout
 Authorization: Bearer {{access_token}}
 
-### (remove later) Protected route for authenticated user:
-GET {{base_url}}/protected
-Authorization: Bearer {{access_token}}
-
+###

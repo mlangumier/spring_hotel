@@ -17,7 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile({"dev", "test"})
+@Profile({"dev"})
+//@Profile({"dev", "test"}) // Replace line above with this one after implementing Test files & test database setup
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
   //TODO: use Services + reusable DTOs (with data validation) to persist data

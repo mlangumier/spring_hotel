@@ -1,7 +1,7 @@
 package fr.hb.mlang.hotel.auth.business;
 
 import fr.hb.mlang.hotel.auth.AuthMapper;
-import fr.hb.mlang.hotel.auth.dto.RegisterRequestDTO;
+import fr.hb.mlang.hotel.auth.dto.RegisterRequest;
 import fr.hb.mlang.hotel.auth.exception.VerifyTokenException;
 import fr.hb.mlang.hotel.user.domain.Role;
 import fr.hb.mlang.hotel.user.domain.User;
@@ -26,7 +26,7 @@ public class RegistrationManager {
    * @param request DTO containing data from the registration form
    * @return the newly created <code>User</code>
    */
-  public User createUser(RegisterRequestDTO request) {
+  public User createUser(RegisterRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new IllegalArgumentException("Email already in use");
     }
